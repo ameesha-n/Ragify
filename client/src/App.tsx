@@ -60,6 +60,11 @@ function App() {
   useEffect(() => {
     const id = window.setTimeout(() => setIsReady(true), 80);
 
+    // Wake up the backend on landing page load to resolve Render's cold start latency
+    axios.get(`${API_BASE_URL}/health`).catch((error) => {
+      console.warn('Backend wake-up ping failed or is still starting up:', error);
+    });
+
     return () => window.clearTimeout(id);
   }, []);
 

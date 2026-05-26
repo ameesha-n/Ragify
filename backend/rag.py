@@ -1,11 +1,26 @@
+import os
+import logging
+from dotenv import load_dotenv
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 import chromadb
 import google.generativeai as genai
 import uuid
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("ragify")
+
+# Load environment variables
+load_dotenv()
+
 # Gemini API Key
-genai.configure(api_key="AIzaSyCvi4U_P1ONkerCdDRYHNajfE-PJ8fvF0g")
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    logger.warning("WARNING: GEMINI_API_KEY is not set. Falling back to development API key.")
+    api_key = "AIzaSyCvi4U_P1ONkerCdDRYHNajfE-PJ8fvF0g"
+
+genai.configure(api_key=api_key)
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
