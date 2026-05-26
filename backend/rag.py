@@ -2,7 +2,6 @@ import os
 import logging
 from dotenv import load_dotenv
 from pypdf import PdfReader
-from sentence_transformers import SentenceTransformer
 import chromadb
 import google.generativeai as genai
 import uuid
@@ -22,10 +21,17 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
-
 client = chromadb.Client()
 collection = client.get_or_create_collection("pdf_docs")
+
+def get_embeddings(texts: list[str] | str, is_query: bool = False):
+    task_type = "retrieval_query" if is_query else "retrieval_document"
+    response = genai.embed_content(
+        model="models/text-embedding-004",
+        content=texts,
+        task_type=task_type
+    )
+    return response["embedding"]
 
 def extract_text(pdf_path):
     reader = PdfReader(pdf_path)
@@ -56,7 +62,7 @@ def process_pdf(pdf_path):
     print(chunks[:2])
     print(len(chunks))
 
-    embeddings = model.encode(chunks).tolist()
+    embeddings = get_embeddings(chunks, is_query=False)
 
     ids = [str(uuid.uuid4()) for _ in chunks]
 
@@ -67,7 +73,7 @@ def process_pdf(pdf_path):
     )
 
 def ask_question(question):
-    question_embedding = model.encode([question]).tolist()[0]
+    question_embedding = get_embeddings(question, is_query=True)
 
     results = collection.query(
         query_embeddings=[question_embedding],
