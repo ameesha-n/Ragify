@@ -56,12 +56,14 @@ def chunk_text(text, chunk_size=500):
 
 def process_pdf(pdf_path):
     text = extract_text(pdf_path)
+    if not text or not text.strip():
+        raise ValueError("Could not extract any readable text from the PDF. Please make sure the PDF contains digital text (not scanned images) and is not password-protected.")
 
     chunks = chunk_text(text)
+    if not chunks:
+        raise ValueError("Could not create any text chunks from the PDF.")
 
-    print(chunks[:2])
-    print(len(chunks))
-
+    logger.info(f"Creating embeddings for {len(chunks)} chunks...")
     embeddings = get_embeddings(chunks, is_query=False)
 
     ids = [str(uuid.uuid4()) for _ in chunks]
