@@ -27,7 +27,7 @@ collection = client.get_or_create_collection("pdf_docs")
 def get_embeddings(texts: list[str] | str, is_query: bool = False):
     task_type = "retrieval_query" if is_query else "retrieval_document"
     response = genai.embed_content(
-        model="models/text-embedding-004",
+        model="models/gemini-embedding-2",
         content=texts,
         task_type=task_type
     )
